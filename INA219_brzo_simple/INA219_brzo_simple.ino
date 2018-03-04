@@ -6,7 +6,8 @@
     (c) 2014 by Korneliusz Jarzebski
 */
 
-#include <Wire.h>
+//#include <Wire.h>
+#include <brzo_i2c.h>
 #include <INA219.h>
 
 INA219 ina;

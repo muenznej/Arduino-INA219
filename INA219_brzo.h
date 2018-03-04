@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef INA219_h
-#define INA219_h
+#ifndef INA219_brzo_h
+#define INA219_brzo_h
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -88,7 +88,7 @@ typedef enum
 } ina219_mode_t;
 
 
-class INA219
+class INA219_brzo
 {
     public:
 

@@ -24,47 +24,55 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "WProgram.h"
 #endif
 
-#include <Wire.h>
+#include <brzo_i2c.h>
+#include "INA219_brzo.h"
 
-#include "INA219.h"
+uint8_t SDA_PIN = D1; //5
+uint8_t SCL_PIN = D2; //4
+uint16_t SCL_frequency_KHz = 100;
 
-bool INA219::begin(uint8_t address)
+//uint8_t ADDR = 0x40;
+uint8_t ADDR = 0x40;
+uint32_t SCL_STRETCH_TIMEOUT = 500;
+uint8_t buffer[2];
+
+bool INA219_brzo::begin(uint8_t address)
 {
-    Wire.begin();
-    inaAddress = address;
+    brzo_i2c_setup(SDA_PIN, SCL_PIN, SCL_STRETCH_TIMEOUT);
+    ADDR = address;
     return true;
 }
 
-bool INA219::configure(ina219_range_t range, ina219_gain_t gain, ina219_busRes_t busRes, ina219_shuntRes_t shuntRes, ina219_mode_t mode)
+bool INA219_brzo::configure(ina219_range_t range, ina219_gain_t gain, ina219_busRes_t busRes, ina219_shuntRes_t shuntRes, ina219_mode_t mode)
 {
     uint16_t config = 0;
 
     config |= (range << 13 | gain << 11 | busRes << 7 | shuntRes << 3 | mode);
 
-    switch(range)
+    switch (range)
     {
-        case INA219_RANGE_32V:
-            vBusMax = 32.0f;
-            break;
-        case INA219_RANGE_16V:
-            vBusMax = 16.0f;
-            break;
+    case INA219_RANGE_32V:
+        vBusMax = 32.0f;
+        break;
+    case INA219_RANGE_16V:
+        vBusMax = 16.0f;
+        break;
     }
 
-    switch(gain)
+    switch (gain)
     {
-        case INA219_GAIN_320MV:
-            vShuntMax = 0.32f;
-            break;
-        case INA219_GAIN_160MV:
-            vShuntMax = 0.16f;
-            break;
-        case INA219_GAIN_80MV:
-            vShuntMax = 0.08f;
-            break;
-        case INA219_GAIN_40MV:
-            vShuntMax = 0.04f;
-            break;
+    case INA219_GAIN_320MV:
+        vShuntMax = 0.32f;
+        break;
+    case INA219_GAIN_160MV:
+        vShuntMax = 0.16f;
+        break;
+    case INA219_GAIN_80MV:
+        vShuntMax = 0.08f;
+        break;
+    case INA219_GAIN_40MV:
+        vShuntMax = 0.04f;
+        break;
     }
 
     writeRegister16(INA219_REG_CONFIG, config);
@@ -72,7 +80,7 @@ bool INA219::configure(ina219_range_t range, ina219_gain_t gain, ina219_busRes_t
     return true;
 }
 
-bool INA219::calibrate(float rShuntValue, float iMaxExpected)
+bool INA219_brzo::calibrate(float rShuntValue, float iMaxExpected)
 {
     uint16_t calibrationValue;
     rShunt = rShuntValue;
@@ -98,12 +106,12 @@ bool INA219::calibrate(float rShuntValue, float iMaxExpected)
     return true;
 }
 
-float INA219::getMaxPossibleCurrent(void)
+float INA219_brzo::getMaxPossibleCurrent(void)
 {
     return (vShuntMax / rShunt);
 }
 
-float INA219::getMaxCurrent(void)
+float INA219_brzo::getMaxCurrent(void)
 {
     float maxCurrent = (currentLSB * 32767);
     float maxPossible = getMaxPossibleCurrent();
@@ -111,41 +119,43 @@ float INA219::getMaxCurrent(void)
     if (maxCurrent > maxPossible)
     {
         return maxPossible;
-    } else
+    }
+    else
     {
         return maxCurrent;
     }
 }
 
-float INA219::getMaxShuntVoltage(void)
+float INA219_brzo::getMaxShuntVoltage(void)
 {
     float maxVoltage = getMaxCurrent() * rShunt;
 
     if (maxVoltage >= vShuntMax)
     {
         return vShuntMax;
-    } else
+    }
+    else
     {
         return maxVoltage;
     }
 }
 
-float INA219::getMaxPower(void)
+float INA219_brzo::getMaxPower(void)
 {
     return (getMaxCurrent() * vBusMax);
 }
 
-float INA219::readBusPower(void)
+float INA219_brzo::readBusPower(void)
 {
     return (readRegister16(INA219_REG_POWER) * powerLSB);
 }
 
-float INA219::readShuntCurrent(void)
+float INA219_brzo::readShuntCurrent(void)
 {
     return (readRegister16(INA219_REG_CURRENT) * currentLSB);
 }
 
-float INA219::readShuntVoltage(void)
+float INA219_brzo::readShuntVoltage(void)
 {
     float voltage;
 
@@ -154,7 +164,7 @@ float INA219::readShuntVoltage(void)
     return (voltage / 100000);
 }
 
-float INA219::readBusVoltage(void)
+float INA219_brzo::readBusVoltage(void)
 {
     int16_t voltage;
 
@@ -164,7 +174,7 @@ float INA219::readBusVoltage(void)
     return (voltage * 0.004);
 }
 
-ina219_range_t INA219::getRange(void)
+ina219_range_t INA219_brzo::getRange(void)
 {
     uint16_t value;
 
@@ -175,7 +185,7 @@ ina219_range_t INA219::getRange(void)
     return (ina219_range_t)value;
 }
 
-ina219_gain_t INA219::getGain(void)
+ina219_gain_t INA219_brzo::getGain(void)
 {
     uint16_t value;
 
@@ -186,7 +196,7 @@ ina219_gain_t INA219::getGain(void)
     return (ina219_gain_t)value;
 }
 
-ina219_busRes_t INA219::getBusRes(void)
+ina219_busRes_t INA219_brzo::getBusRes(void)
 {
     uint16_t value;
 
@@ -197,7 +207,7 @@ ina219_busRes_t INA219::getBusRes(void)
     return (ina219_busRes_t)value;
 }
 
-ina219_shuntRes_t INA219::getShuntRes(void)
+ina219_shuntRes_t INA219_brzo::getShuntRes(void)
 {
     uint16_t value;
 
@@ -208,7 +218,7 @@ ina219_shuntRes_t INA219::getShuntRes(void)
     return (ina219_shuntRes_t)value;
 }
 
-ina219_mode_t INA219::getMode(void)
+ina219_mode_t INA219_brzo::getMode(void)
 {
     uint16_t value;
 
@@ -218,52 +228,39 @@ ina219_mode_t INA219::getMode(void)
     return (ina219_mode_t)value;
 }
 
-int16_t INA219::readRegister16(uint8_t reg)
+int16_t INA219_brzo::readRegister16(uint8_t reg)
 {
     int16_t value;
 
-    Wire.beginTransmission(inaAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
-    Wire.endTransmission();
+    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_write(&reg, 1, true); // 1 byte, repeat 
+    brzo_i2c_end_transaction();
 
-    delay(1);
+    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_read(&buffer[0], 2, false);
+    // uint8_t vha = brzo_i2c_end_transaction();
+    // uint8_t vla = brzo_i2c_end_transaction();
 
-    Wire.beginTransmission(inaAddress);
-    Wire.requestFrom(inaAddress, 2);
-    while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        uint8_t vha = Wire.read();
-        uint8_t vla = Wire.read();
-    #else
-        uint8_t vha = Wire.receive();
-        uint8_t vla = Wire.receive();
-    #endif;
-    Wire.endTransmission();
+    uint8_t vha = buffer[0];
+    uint8_t vla = buffer[1];
+
+    brzo_i2c_end_transaction();
 
     value = vha << 8 | vla;
 
     return value;
 }
 
-void INA219::writeRegister16(uint8_t reg, uint16_t val)
+void INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
 {
-    uint8_t vla;
-    vla = (uint8_t)val;
-    val >>= 8;
+    uint8_t vla = (uint8_t)val;
 
-    Wire.beginTransmission(inaAddress);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write((uint8_t)val);
-        Wire.write(vla);
-    #else
-        Wire.send(reg);
-        Wire.send((uint8_t)val);
-        Wire.send(vla);
-    #endif
-    Wire.endTransmission();
+    val >>= 8;
+    uint8_t tmp_val = (uint8_t)val;
+
+    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_write(&reg, 1, true);     // 1 byte, repeat
+    brzo_i2c_write(&tmp_val, 1, false); // 1 byte, no repeat
+    brzo_i2c_write(&vla, 1, false);     // 1 byte, no repeat
+    brzo_i2c_end_transaction();
 }
