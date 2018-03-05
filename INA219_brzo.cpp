@@ -27,16 +27,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <brzo_i2c.h>
 #include "INA219_brzo.h"
 
-uint8_t SDA_PIN = D1; //5
-uint8_t SCL_PIN = D2; //4
-uint16_t SCL_frequency_KHz = 100;
+#if defined(ESP8266)
+#include <pgmspace.h>
+#define _delay_ms(ms) delayMicroseconds((ms) * 1000)
+#define _delay_us(ms) delayMicroseconds((ms))
+#endif
+
+//#include <util/delay.h>
+#ifdef __avr__
+#include <util/delay.h>
+#endif
+
+uint8_t SDA_PIN = 5; //5
+uint8_t SCL_PIN = 4; //4
+uint16_t SCL_frequency_KHz = 800;
 
 //uint8_t ADDR = 0x40;
 uint8_t ADDR = 0x40;
-uint32_t SCL_STRETCH_TIMEOUT = 500;
-uint8_t buffer[2];
+uint32_t SCL_STRETCH_TIMEOUT = 0;
+uint8_t buffer[3];
 
-bool INA219_brzo::begin(uint8_t address)
+bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address)
 {
     brzo_i2c_setup(SDA_PIN, SCL_PIN, SCL_STRETCH_TIMEOUT);
     ADDR = address;
@@ -228,39 +239,38 @@ ina219_mode_t INA219_brzo::getMode(void)
     return (ina219_mode_t)value;
 }
 
-int16_t INA219_brzo::readRegister16(uint8_t reg)
+int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 {
     int16_t value;
 
-    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
-    brzo_i2c_write(&reg, 1, true); // 1 byte, repeat 
-    brzo_i2c_end_transaction();
+    buffer[0] = reg;
 
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
-    brzo_i2c_read(&buffer[0], 2, false);
-    // uint8_t vha = brzo_i2c_end_transaction();
-    // uint8_t vla = brzo_i2c_end_transaction();
+    brzo_i2c_write(buffer, 1, true); // 1 byte, repeat 
+    brzo_i2c_read(buffer, 2, false);
+    brzo_i2c_end_transaction();
 
     uint8_t vha = buffer[0];
     uint8_t vla = buffer[1];
-
-    brzo_i2c_end_transaction();
-
     value = vha << 8 | vla;
 
     return value;
 }
 
-void INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
+void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
 {
-    uint8_t vla = (uint8_t)val;
+    buffer[0] = reg;
 
+    uint8_t vla = (uint8_t)val;
     val >>= 8;
+
     uint8_t tmp_val = (uint8_t)val;
 
+    buffer[1] = tmp_val;
+    buffer[2] = vla;
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
-    brzo_i2c_write(&reg, 1, true);     // 1 byte, repeat
-    brzo_i2c_write(&tmp_val, 1, false); // 1 byte, no repeat
-    brzo_i2c_write(&vla, 1, false);     // 1 byte, no repeat
+    brzo_i2c_write(&buffer[0], 1, true);     // 1 byte, repeat
+    brzo_i2c_write(&buffer[1], 2, false); // 1 byte, no repeat
     brzo_i2c_end_transaction();
 }
+

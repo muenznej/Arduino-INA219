@@ -92,7 +92,7 @@ class INA219_brzo
 {
     public:
 
-	bool begin(uint8_t address = INA219_ADDRESS);
+	bool ICACHE_RAM_ATTR begin(uint8_t address = INA219_ADDRESS);
 	bool configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
 	bool calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
 
@@ -118,8 +118,8 @@ class INA219_brzo
 	float currentLSB, powerLSB;
 	float vShuntMax, vBusMax, rShunt;
 
-	void writeRegister16(uint8_t reg, uint16_t val);
-	int16_t readRegister16(uint8_t reg);
+	void ICACHE_RAM_ATTR writeRegister16(uint8_t reg, uint16_t val);
+	int16_t ICACHE_RAM_ATTR readRegister16(uint8_t reg);
 };
 
 #endif
