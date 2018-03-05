@@ -21,3 +21,11 @@ If you want to support the further and long-term development of libraries, pleas
 You can do this by transferring any amount to my PayPal account: paypal@jarzebski.pl
 
 Thanks!
+
+----------------
+
+March 06, 2018
+
+I changed the code to use the brzo i2c library for ESP8266 resulting in a i2c bus of 800k @ 80Mhz and 1000k @160mhz.
+
+have fun!
