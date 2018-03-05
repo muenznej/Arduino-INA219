@@ -27,17 +27,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <brzo_i2c.h>
 #include "INA219_brzo.h"
 
-#if defined(ESP8266)
-#include <pgmspace.h>
-#define _delay_ms(ms) delayMicroseconds((ms) * 1000)
-#define _delay_us(ms) delayMicroseconds((ms))
-#endif
-
-//#include <util/delay.h>
-#ifdef __avr__
-#include <util/delay.h>
-#endif
-
 uint8_t SDA_PIN = 5; //5
 uint8_t SCL_PIN = 4; //4
 uint16_t SCL_frequency_KHz = 800;
