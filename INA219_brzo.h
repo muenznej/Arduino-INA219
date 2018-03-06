@@ -88,7 +88,7 @@ typedef enum
 } ina219_mode_t;
 
 
-class ICACHE_RAM_ATTR  INA219_brzo
+class INA219_brzo
 {
     public:
 

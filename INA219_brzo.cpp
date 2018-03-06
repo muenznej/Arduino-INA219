@@ -235,15 +235,15 @@ int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
     brzo_i2c_write(&_buffer[0], 1, true); // Set Register
-    brzo_i2c_read(&_buffer[1], 2, true); // Read 2 Bytes from Register
+    brzo_i2c_read(&_buffer[1], 2, false); // Read 2 Bytes from Register
     uint8_t _ecode = brzo_i2c_end_transaction();
     if (_ecode != 0) // on error
     {
         Serial.println(_ecode);
     }
 
-    uint8_t vha = _buffer[0];
-    uint8_t vla = _buffer[1];
+    uint8_t vha = _buffer[1];
+    uint8_t vla = _buffer[2];
     value = (vha << 8) | vla; // shift to high byte and add low byte, no magic involved :/
 
     return value;
@@ -294,7 +294,7 @@ void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
     _buffer[2] = val & 0xFF;    // low BYTE of DWORD
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
     brzo_i2c_write(&_buffer[0], 1, true);  // Set Register
-    brzo_i2c_write(&_buffer[1], 2, true);  // Write 2Bytes
+    brzo_i2c_write(&_buffer[1], 2, false);  // Write 2Bytes
     uint8_t _ecode = brzo_i2c_end_transaction();
 
     if (_ecode != 0) // on error
