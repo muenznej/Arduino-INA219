@@ -1,23 +1,9 @@
-Arduino-INA219
-==============
+March 06, 2018
 
-INA219 Zero-Drift, Bi-directional Current/Power Monitor Arduino Library
+I changed the code to use the brzo i2c library for ESP8266 resulting in a i2c bus of 800k @ 80Mhz and 1000k @160mhz.
 
-Tutorials: http://www.jarzebski.pl/arduino/czujniki-i-sensory/cyfrowy-czujnik-pradu-mocy-ina219.html
+Its currently not working! Feel free to fix it!
 
-This library use I2C to communicate, 2 pins are required to interface.
-
-I need your help
-----------------
-
-July 31, 2017
-
-In the near future I plan to refactoring the libraries. The main goal is to improve code quality, new features and add support for different versions of Arduino boards like Uno, Mega and Zero.
-
-For this purpose I need to buy modules, Arduino Boards and lot of beer. 
-
-If you want to support the further and long-term development of libraries, please help.
-
-You can do this by transferring any amount to my PayPal account: paypal@jarzebski.pl
-
-Thanks!
+ToDo:
+- [ ] make it work ( reading zeros only )
+- [ ] remove hardcoded debugging stuff, improve overall code quality xD

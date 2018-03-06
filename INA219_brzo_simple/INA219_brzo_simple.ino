@@ -1,6 +1,7 @@
 #include <brzo_i2c.h>
 #include <INA219_brzo.h>
 INA219_brzo ina;
+// scl speed is currently hardcoded
 
 void setup() {
   unsigned long BAUDRATE = 500000;
