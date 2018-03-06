@@ -88,29 +88,29 @@ typedef enum
 } ina219_mode_t;
 
 
-class INA219_brzo
+class ICACHE_RAM_ATTR  INA219_brzo
 {
     public:
 
 	bool ICACHE_RAM_ATTR begin(uint8_t address = INA219_ADDRESS);
-	bool configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
-	bool calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
+	bool ICACHE_RAM_ATTR  configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
+	bool ICACHE_RAM_ATTR  calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
 
-	ina219_range_t getRange(void);
-	ina219_gain_t getGain(void);
-	ina219_busRes_t getBusRes(void);
-	ina219_shuntRes_t getShuntRes(void);
-	ina219_mode_t getMode(void);
+	ina219_range_t ICACHE_RAM_ATTR  getRange(void);
+	ina219_gain_t ICACHE_RAM_ATTR  getGain(void);
+	ina219_busRes_t ICACHE_RAM_ATTR  getBusRes(void);
+	ina219_shuntRes_t ICACHE_RAM_ATTR  getShuntRes(void);
+	ina219_mode_t ICACHE_RAM_ATTR  getMode(void);
 
-	float readShuntCurrent(void);
-	float readShuntVoltage(void);
-	float readBusPower(void);
-	float readBusVoltage(void);
+	float ICACHE_RAM_ATTR  readShuntCurrent(void);
+	float ICACHE_RAM_ATTR  readShuntVoltage(void);
+	float ICACHE_RAM_ATTR  readBusPower(void);
+	float ICACHE_RAM_ATTR  readBusVoltage(void);
 
-	float getMaxPossibleCurrent(void);
-	float getMaxCurrent(void);
-	float getMaxShuntVoltage(void);
-	float getMaxPower(void);
+	float ICACHE_RAM_ATTR  getMaxPossibleCurrent(void);
+	float ICACHE_RAM_ATTR  getMaxCurrent(void);
+	float ICACHE_RAM_ATTR  getMaxShuntVoltage(void);
+	float ICACHE_RAM_ATTR  getMaxPower(void);
 
     private:
 

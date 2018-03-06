@@ -27,14 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <brzo_i2c.h>
 #include "INA219_brzo.h"
 
-uint8_t SDA_PIN = 5; //5
-uint8_t SCL_PIN = 4; //4
-uint16_t SCL_frequency_KHz = 800;
+uint8_t SDA_PIN =  D1; //5
+uint8_t SCL_PIN =  D2; //4
+uint16_t SCL_frequency_KHz = 100;
 
 //uint8_t ADDR = 0x40;
-uint8_t ADDR = 0x40;
-uint32_t SCL_STRETCH_TIMEOUT = 0;
-uint8_t buffer[3];
+uint8_t ADDR = (0x40);
+uint32_t SCL_STRETCH_TIMEOUT = 2000;
+uint8_t _buffer[3] = {0x00,0x00,0x00};
 
 bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address)
 {
@@ -43,7 +43,7 @@ bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address)
     return true;
 }
 
-bool INA219_brzo::configure(ina219_range_t range, ina219_gain_t gain, ina219_busRes_t busRes, ina219_shuntRes_t shuntRes, ina219_mode_t mode)
+bool ICACHE_RAM_ATTR  INA219_brzo::configure(ina219_range_t range, ina219_gain_t gain, ina219_busRes_t busRes, ina219_shuntRes_t shuntRes, ina219_mode_t mode)
 {
     uint16_t config = 0;
 
@@ -80,7 +80,7 @@ bool INA219_brzo::configure(ina219_range_t range, ina219_gain_t gain, ina219_bus
     return true;
 }
 
-bool INA219_brzo::calibrate(float rShuntValue, float iMaxExpected)
+bool ICACHE_RAM_ATTR  INA219_brzo::calibrate(float rShuntValue, float iMaxExpected)
 {
     uint16_t calibrationValue;
     rShunt = rShuntValue;
@@ -106,12 +106,12 @@ bool INA219_brzo::calibrate(float rShuntValue, float iMaxExpected)
     return true;
 }
 
-float INA219_brzo::getMaxPossibleCurrent(void)
+float ICACHE_RAM_ATTR  INA219_brzo::getMaxPossibleCurrent(void)
 {
     return (vShuntMax / rShunt);
 }
 
-float INA219_brzo::getMaxCurrent(void)
+float ICACHE_RAM_ATTR  INA219_brzo::getMaxCurrent(void)
 {
     float maxCurrent = (currentLSB * 32767);
     float maxPossible = getMaxPossibleCurrent();
@@ -126,7 +126,7 @@ float INA219_brzo::getMaxCurrent(void)
     }
 }
 
-float INA219_brzo::getMaxShuntVoltage(void)
+float ICACHE_RAM_ATTR  INA219_brzo::getMaxShuntVoltage(void)
 {
     float maxVoltage = getMaxCurrent() * rShunt;
 
@@ -140,22 +140,22 @@ float INA219_brzo::getMaxShuntVoltage(void)
     }
 }
 
-float INA219_brzo::getMaxPower(void)
+float ICACHE_RAM_ATTR  INA219_brzo::getMaxPower(void)
 {
     return (getMaxCurrent() * vBusMax);
 }
 
-float INA219_brzo::readBusPower(void)
+float ICACHE_RAM_ATTR  INA219_brzo::readBusPower(void)
 {
     return (readRegister16(INA219_REG_POWER) * powerLSB);
 }
 
-float INA219_brzo::readShuntCurrent(void)
+float ICACHE_RAM_ATTR  INA219_brzo::readShuntCurrent(void)
 {
     return (readRegister16(INA219_REG_CURRENT) * currentLSB);
 }
 
-float INA219_brzo::readShuntVoltage(void)
+float ICACHE_RAM_ATTR  INA219_brzo::readShuntVoltage(void)
 {
     float voltage;
 
@@ -164,7 +164,7 @@ float INA219_brzo::readShuntVoltage(void)
     return (voltage / 100000);
 }
 
-float INA219_brzo::readBusVoltage(void)
+float ICACHE_RAM_ATTR  INA219_brzo::readBusVoltage(void)
 {
     int16_t voltage;
 
@@ -174,7 +174,7 @@ float INA219_brzo::readBusVoltage(void)
     return (voltage * 0.004);
 }
 
-ina219_range_t INA219_brzo::getRange(void)
+ina219_range_t ICACHE_RAM_ATTR  INA219_brzo::getRange(void)
 {
     uint16_t value;
 
@@ -185,7 +185,7 @@ ina219_range_t INA219_brzo::getRange(void)
     return (ina219_range_t)value;
 }
 
-ina219_gain_t INA219_brzo::getGain(void)
+ina219_gain_t ICACHE_RAM_ATTR  INA219_brzo::getGain(void)
 {
     uint16_t value;
 
@@ -196,7 +196,7 @@ ina219_gain_t INA219_brzo::getGain(void)
     return (ina219_gain_t)value;
 }
 
-ina219_busRes_t INA219_brzo::getBusRes(void)
+ina219_busRes_t ICACHE_RAM_ATTR  INA219_brzo::getBusRes(void)
 {
     uint16_t value;
 
@@ -207,7 +207,7 @@ ina219_busRes_t INA219_brzo::getBusRes(void)
     return (ina219_busRes_t)value;
 }
 
-ina219_shuntRes_t INA219_brzo::getShuntRes(void)
+ina219_shuntRes_t ICACHE_RAM_ATTR  INA219_brzo::getShuntRes(void)
 {
     uint16_t value;
 
@@ -218,7 +218,7 @@ ina219_shuntRes_t INA219_brzo::getShuntRes(void)
     return (ina219_shuntRes_t)value;
 }
 
-ina219_mode_t INA219_brzo::getMode(void)
+ina219_mode_t ICACHE_RAM_ATTR  INA219_brzo::getMode(void)
 {
     uint16_t value;
 
@@ -231,35 +231,74 @@ ina219_mode_t INA219_brzo::getMode(void)
 int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 {
     int16_t value;
-
-    buffer[0] = reg;
+    _buffer[0] = reg;
 
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
-    brzo_i2c_write(buffer, 1, true); // 1 byte, repeat 
-    brzo_i2c_read(buffer, 2, false);
-    brzo_i2c_end_transaction();
+    brzo_i2c_write(&_buffer[0], 1, true); // Set Register
+    brzo_i2c_read(&_buffer[1], 2, true); // Read 2 Bytes from Register
+    uint8_t _ecode = brzo_i2c_end_transaction();
+    if (_ecode != 0) // on error
+    {
+        Serial.println(_ecode);
+    }
 
-    uint8_t vha = buffer[0];
-    uint8_t vla = buffer[1];
-    value = vha << 8 | vla;
+    uint8_t vha = _buffer[0];
+    uint8_t vla = _buffer[1];
+    value = (vha << 8) | vla; // shift to high byte and add low byte, no magic involved :/
 
     return value;
 }
+/*void Adafruit_INA219::wireReadRegister(uint8_t reg, uint16_t *value)
+{
+
+  _i2c->beginTransmission(ina219_i2caddr);
+  #if ARDUINO >= 100
+    _i2c->write(reg);                       // Register
+  #else
+    _i2c->send(reg);                        // Register
+  #endif
+  _i2c->endTransmission();
+
+  delay(1); // Max 12-bit conversion time is 586us per sample
+
+  _i2c->requestFrom(ina219_i2caddr, (uint8_t)2);
+  #if ARDUINO >= 100
+    // Shift values to create properly formed integer
+    *value = ((_i2c->read() << 8) | _i2c->read());
+  #else
+    // Shift values to create properly formed integer
+    *value = ((_i2c->receive() << 8) | _i2c->receive());
+  #endif
+}*/
 
 void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
 {
-    buffer[0] = reg;
-
+    /*
     uint8_t vla = (uint8_t)val;
     val >>= 8;
 
-    uint8_t tmp_val = (uint8_t)val;
-
-    buffer[1] = tmp_val;
-    buffer[2] = vla;
+    _buffer[1] = (uint8_t)val;
+    _buffer[2] = vla;
     brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
-    brzo_i2c_write(&buffer[0], 1, true);     // 1 byte, repeat
-    brzo_i2c_write(&buffer[1], 2, false); // 1 byte, no repeat
-    brzo_i2c_end_transaction();
-}
+    brzo_i2c_write(&_buffer[0], 1, true);  // 1 byte, repeat
+    brzo_i2c_write(&_buffer[1], 2, false); // 2 byte, no repeat
+    */
 
+    /* val = 1011 1111 1001 0110
+       val >> 8: 0000 0000 1011 1111
+       0xFF = 1111 1111
+       (val >> 8) & 0xFF: 1011 1111 // seems to be some implicity typecast to byte
+    */
+    _buffer[0] = reg;
+    _buffer[1] = (val >> 8) & 0xFF;  // high BYTE of DWORD
+    _buffer[2] = val & 0xFF;    // low BYTE of DWORD
+    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_write(&_buffer[0], 1, true);  // Set Register
+    brzo_i2c_write(&_buffer[1], 2, true);  // Write 2Bytes
+    uint8_t _ecode = brzo_i2c_end_transaction();
+
+    if (_ecode != 0) // on error
+    {
+        Serial.println(_ecode);
+    }
+}
