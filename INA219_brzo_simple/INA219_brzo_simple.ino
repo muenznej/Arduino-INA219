@@ -1,16 +1,17 @@
 #include <brzo_i2c.h>
 #include <INA219_brzo.h>
-INA219_brzo ina;
+INA219_brzo ina(4,5);
 
 void setup() {
+  delay(2000);
   unsigned long BAUDRATE = 500000;
   Serial.begin(BAUDRATE);
   Serial.println("Initialize INA219");
   Serial.println("-----------------------------------------------");
-  ina.begin(0x40);
-  ina.configure(INA219_RANGE_16V, INA219_GAIN_40MV, INA219_BUS_RES_9BIT, INA219_SHUNT_RES_9BIT_1S, INA219_MODE_SHUNT_CONT);
+  ina.begin(0x40, 1000, 35);
+  ina.configure(INA219_RANGE_16V, INA219_GAIN_40MV, INA219_BUS_RES_9BIT, INA219_SHUNT_RES_12BIT_1S, INA219_MODE_SHUNT_BUS_CONT);
   ina.calibrate(0.1, 0.1); // 0.1ohm, 50mA
-  delay(2000);
+  delay(100);
 }
 
 float ina_current = 0.;
@@ -20,7 +21,6 @@ unsigned long t1;
 unsigned long t2;
 
 #define READ_LIMIT 1000
-uint8_t mybuffer[3];
 
 void loop() {
   cnt++;
@@ -28,18 +28,19 @@ void loop() {
     t1 = micros();
   }
   ina_current = ina.readShuntCurrent();
+  //ina_bus = ina.readBusVoltage();
 
   if (cnt == READ_LIMIT) {
-    checkConfig();
+    //checkConfig();
     t2 = micros();
 
     Serial.print((t2 - t1));
     Serial.print(" µs; ");
-    Serial.print((float)(t2 - t1) / READ_LIMIT, 5);
+    Serial.print((float)(t2 - t1) / READ_LIMIT, 1);
     Serial.print(" µs/READ; ");
-    Serial.print(ina_current, HEX);
+    Serial.print(ina_current*1000.0, 2);
     Serial.print(" mA;");
-    Serial.print(ina_bus, 10);
+    Serial.print(ina_bus, 2);
     Serial.print(" V");
     Serial.println("");
     Serial.println("");
