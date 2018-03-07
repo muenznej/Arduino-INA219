@@ -18,28 +18,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #include <brzo_i2c.h>
 #include "INA219_brzo.h"
 
-uint8_t SDA_PIN = 5; //5
-uint8_t SCL_PIN = 4; //4
-uint16_t SCL_frequency_KHz = 1000;
-
-//uint8_t ADDR = 0x40;
-uint8_t ADDR = (0x40);
-uint32_t SCL_STRETCH_TIMEOUT = 2000;
-uint8_t _buffer[3] = {0x00, 0x00, 0x00};
-
-bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address)
+INA219_brzo::INA219_brzo(uint8_t scl, uint8_t sda )
 {
-    brzo_i2c_setup(SDA_PIN, SCL_PIN, SCL_STRETCH_TIMEOUT);
-    ADDR = address;
+    _scl = scl;
+    _sda = sda;
+}
+bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address, uint16_t speed, uint16_t stretch)
+{
+    _address = address;
+    _speed = speed;
+    _stretch = stretch;
+
+    brzo_i2c_setup(_sda, _scl, _stretch);
     return true;
 }
 
@@ -233,7 +226,7 @@ int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
     int16_t value;
     _buffer[0] = reg;
 
-    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_start_transaction(_address, _speed);
     brzo_i2c_write(&_buffer[0], 1, true); // Set Register
     brzo_i2c_read(&_buffer[1], 2, false); // Read 2 Bytes from Register
     uint8_t _ecode = brzo_i2c_end_transaction();
@@ -279,7 +272,7 @@ void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
     Serial.print(_buffer[2], BIN);
     Serial.println("");
 #endif
-    brzo_i2c_start_transaction(ADDR, SCL_frequency_KHz);
+    brzo_i2c_start_transaction(_address, _speed);
     brzo_i2c_write(&_buffer[0], 3, true); // Set Register
     uint8_t _ecode = brzo_i2c_end_transaction();
 #ifdef DEBUG
