@@ -21,8 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INA219_brzo_h
 #define INA219_brzo_h
 
-#define SDA_PIN (5) //D1
 #define SCL_PIN (4) //D2
+#define SDA_PIN (5) //D1
+
 #define SCL_STRETCH_TIMEOUT (0)
 #define SCL_frequency_KHz (1000)
 #define INA219_ADDRESS (0x40)
@@ -102,6 +103,8 @@ class INA219_brzo
     float ICACHE_RAM_ATTR getMaxCurrent(void);
     float ICACHE_RAM_ATTR getMaxShuntVoltage(void);
     float ICACHE_RAM_ATTR getMaxPower(void);
+
+    void ICACHE_RAM_ATTR checkConfig(void)
 
     INA219_brzo(uint8_t _scl=SCL_PIN, uint8_t _sda=SDA_PIN );
 
