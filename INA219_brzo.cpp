@@ -159,7 +159,7 @@ float ICACHE_RAM_ATTR INA219_brzo::readShuntVoltage(void)
 
 float ICACHE_RAM_ATTR INA219_brzo::readBusVoltage(void)
 {
-    int16_t voltage;
+    uint16_t voltage;
 
     voltage = readRegister16(INA219_REG_BUSVOLTAGE);
     voltage >>= 3;
