@@ -221,9 +221,9 @@ ina219_mode_t ICACHE_RAM_ATTR INA219_brzo::getMode(void)
     return (ina219_mode_t)value;
 }
 
-int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
+uint16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 {
-    int16_t value;
+    uint16_t value;
     _buffer[0] = reg;
 
     brzo_i2c_start_transaction(_address, _speed);
