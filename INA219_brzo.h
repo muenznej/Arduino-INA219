@@ -21,12 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef INA219_brzo_h
 #define INA219_brzo_h
 
-#if ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 #define SDA_PIN (5) //D1
 #define SCL_PIN (4) //D2
 #define SCL_STRETCH_TIMEOUT (0)
@@ -113,9 +107,9 @@ class INA219_brzo
 
   private:
     void ICACHE_RAM_ATTR writeRegister16(uint8_t reg, uint16_t val);
-    int16_t ICACHE_RAM_ATTR readRegister16(uint8_t reg);
+    uint16_t ICACHE_RAM_ATTR readRegister16(uint8_t reg);
     uint8_t _buffer[3];
-    int8_t _address;
+    uint8_t _address;
     uint16_t _speed;
     uint16_t _stretch;
     uint8_t _scl;
