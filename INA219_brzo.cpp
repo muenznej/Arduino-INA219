@@ -18,10 +18,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <brzo_i2c.h>
+
 #include "INA219_brzo.h"
 
-INA219_brzo::INA219_brzo(uint8_t scl, uint8_t sda )
+#if ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
+#ifdef(ESP8266)
+#include <Wire.h>
+#else
+#include "brzo_i2c.h"
+#endif
+
+INA219_brzo::INA219_brzo(uint8_t scl, uint8_t sda)
 {
     _scl = scl;
     _sda = sda;
@@ -31,8 +43,12 @@ bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address, uint16_t speed, uint16_
     _address = address;
     _speed = speed;
     _stretch = stretch;
-
+#ifdef(ESP8266)
     brzo_i2c_setup(_sda, _scl, _stretch);
+#else
+    Wire.begin(_sda, _scl);
+#endif
+
     return true;
 }
 
@@ -221,65 +237,82 @@ ina219_mode_t ICACHE_RAM_ATTR INA219_brzo::getMode(void)
     return (ina219_mode_t)value;
 }
 
-uint16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
+int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 {
-    uint16_t value;
+    int16_t value;
     _buffer[0] = reg;
 
+#ifdef(ESP8266)
     brzo_i2c_start_transaction(_address, _speed);
     brzo_i2c_write(&_buffer[0], 1, true); // Set Register
     brzo_i2c_read(&_buffer[1], 2, false); // Read 2 Bytes from Register
     uint8_t _ecode = brzo_i2c_end_transaction();
+    uint8_t vha = _buffer[1];
+    uint8_t vla = _buffer[2];
+#else
+    Wire.beginTransmission(_address);
+#if ARDUINO >= 100
+    Wire.write(reg);
+#else
+    Wire.send(reg);
+#endif
+    Wire.endTransmission();
 
-    uint8_t vha = _buffer[1]; // 1011 1111
-    uint8_t vla = _buffer[2]; // 1001 0110
-    // vha<<8 --> 1011 1111 0000 0000
-    // (vha<<8)|vla --> 1011 1111 0000 0000 | 0000 0000 1001 0110
-    value = (vha << 8) | vla; // shift to high byte and add low byte
-#ifdef DEBUG
-    Serial.println("");
-    Serial.print("Reading from:");
-    Serial.println(_buffer[0], BIN);
-    Serial.print(value, BIN);
-    Serial.println("");
+    Wire.requestFrom(_address, 2);
+    while (!Wire.available())
+    {
+    };
+#if ARDUINO >= 100
+    uint8_t vha = Wire.read();
+    uint8_t vla = Wire.read();
+#else
+    uint8_t vha = Wire.receive();
+    uint8_t vla = Wire.receive();
+#endif
+#endif
 
+#ifdef(ESP8266)
     if (_ecode != 0) // on error
     {
         Serial.print("Error Code: ");
         Serial.println(_ecode);
     }
 #endif
+
+    value = (vha << 8) | vla;
     return value;
 }
 
 void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
 {
-    /* val = 1011 1111 1001 0110
-       val >> 8: 0000 0000 1011 1111
-       0xFF = 1111 1111
-       (val >> 8) & 0xFF: 1011 1111 // seems to be some implicity typecast to byte
-    */
+#ifdef(ESP8266)
     _buffer[0] = reg;
     _buffer[1] = (val >> 8) & 0xFF; // high BYTE of DWORD
     _buffer[2] = val & 0xFF;        // low BYTE of DWORD
 
-#ifdef DEBUG
-    Serial.println("");
-    Serial.print("Writing to:");
-    Serial.println(_buffer[0], BIN);
-    Serial.print(_buffer[1], BIN);
-    Serial.print(" ");
-    Serial.print(_buffer[2], BIN);
-    Serial.println("");
-#endif
     brzo_i2c_start_transaction(_address, _speed);
     brzo_i2c_write(&_buffer[0], 3, true); // Set Register
     uint8_t _ecode = brzo_i2c_end_transaction();
-#ifdef DEBUG
     if (_ecode != 0) // on error
     {
         Serial.print("Error Code: ");
         Serial.println(_ecode);
     }
+#else
+    uint8_t vla;
+    vla = (uint8_t)val;
+    val >>= 8;
+
+    Wire.beginTransmission(_address);
+#if ARDUINO >= 100
+    Wire.write(reg);
+    Wire.write((uint8_t)val);
+    Wire.write(vla);
+#else
+    Wire.send(reg);
+    Wire.send((uint8_t)val);
+    Wire.send(vla);
+#endif
+    Wire.endTransmission();
 #endif
 }

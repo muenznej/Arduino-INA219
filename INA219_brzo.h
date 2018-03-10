@@ -107,7 +107,7 @@ class INA219_brzo
 
   private:
     void ICACHE_RAM_ATTR writeRegister16(uint8_t reg, uint16_t val);
-    uint16_t ICACHE_RAM_ATTR readRegister16(uint8_t reg);
+    int16_t ICACHE_RAM_ATTR readRegister16(uint8_t reg);
     uint8_t _buffer[3];
     uint8_t _address;
     uint16_t _speed;
