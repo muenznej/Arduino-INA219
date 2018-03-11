@@ -11,11 +11,11 @@ published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef INA219_h
@@ -83,33 +83,33 @@ typedef enum {
 class INA219
 {
   public:
-    bool  begin(uint8_t address = INA219_ADDRESS , uint16_t speed = SCL_frequency_KHz);
-    bool  configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
-    bool  calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
+    bool begin(uint8_t address = INA219_ADDRESS, uint16_t speed = SCL_frequency_KHz, uint16_t stretch = 0);
+    bool configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
+    bool calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
 
-    ina219_range_t  getRange(void);
-    ina219_gain_t  getGain(void);
-    ina219_busRes_t  getBusRes(void);
-    ina219_shuntRes_t  getShuntRes(void);
-    ina219_mode_t  getMode(void);
+    ina219_range_t getRange(void);
+    ina219_gain_t getGain(void);
+    ina219_busRes_t getBusRes(void);
+    ina219_shuntRes_t getShuntRes(void);
+    ina219_mode_t getMode(void);
 
-    float  readShuntCurrent(void);
-    float  readShuntVoltage(void);
-    float  readBusPower(void);
-    float  readBusVoltage(void);
+    float readShuntCurrent(void);
+    float readShuntVoltage(void);
+    float readBusPower(void);
+    float readBusVoltage(void);
 
-    float  getMaxPossibleCurrent(void);
-    float  getMaxCurrent(void);
-    float  getMaxShuntVoltage(void);
-    float  getMaxPower(void);
+    float getMaxPossibleCurrent(void);
+    float getMaxCurrent(void);
+    float getMaxShuntVoltage(void);
+    float getMaxPower(void);
 
     void checkConfig(void);
 
-    INA219(uint8_t _scl=SCL_PIN, uint8_t _sda=SDA_PIN );
+    INA219(uint8_t _scl = SCL_PIN, uint8_t _sda = SDA_PIN);
 
   private:
-    void  writeRegister16(uint8_t reg, uint16_t val);
-    int16_t  readRegister16(uint8_t reg);
+    void writeRegister16(uint8_t reg, uint16_t val);
+    int16_t readRegister16(uint8_t reg);
     uint8_t _buffer[3];
     uint8_t _address;
     uint16_t _speed;

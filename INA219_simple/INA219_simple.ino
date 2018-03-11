@@ -1,12 +1,12 @@
 //#define ESP8266
 
-#ifdef ESP8266
+//#ifdef ESP8266
 #include <INA219_brzo.h>
 INA219_brzo ina(4,5); //INA219_brzo ina(D2,D1)
-#else
-#include <INA219.h>
-INA219 ina(4,5); //INA219 ina(D2,D1)
-#endif
+//#else
+//#include <INA219.h>
+//INA219 ina(4,5); //INA219 ina(D2,D1)
+//#endif
 
 void setup() {
   delay(500);
@@ -14,7 +14,7 @@ void setup() {
   Serial.begin(BAUDRATE);
   Serial.println("Initialize INA219");
   Serial.println("-----------------------------------------------");
-  ina.begin(0x40, 800, 100);
+  ina.begin(0x40);
   ina.configure(INA219_RANGE_16V, INA219_GAIN_40MV, INA219_BUS_RES_9BIT, INA219_SHUNT_RES_9BIT_1S, INA219_MODE_SHUNT_BUS_CONT);
   ina.calibrate(0.1, 0.5); // 0.1ohm, 500mA
   delay(500);

@@ -229,9 +229,6 @@ ina219_mode_t INA219::getMode(void)
 int16_t INA219::readRegister16(uint8_t reg)
 {
     int16_t value;
-    _buffer[0] = reg;
-    uint8_t vha = _buffer[1];
-    uint8_t vla = _buffer[2];
 
     Wire.beginTransmission(_address);
 #if ARDUINO >= 100
@@ -241,7 +238,7 @@ int16_t INA219::readRegister16(uint8_t reg)
 #endif
     Wire.endTransmission();
 
-    Wire.requestFrom(_address, 2);
+    Wire.requestFrom(_address, (uint8_t)2);
     while (!Wire.available())
     {
     };

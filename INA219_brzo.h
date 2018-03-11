@@ -11,11 +11,11 @@ published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef INA219_brzo_h
@@ -26,12 +26,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define SCL_STRETCH_TIMEOUT (0)
 
-#if (F_CPU == 16000000)
-#define SCL_frequency_KHz (1000)
+#if F_CPU == 160000000L
+#define SCL_frequency_KHz 1000
 #else
-#define SCL_frequency_KHz (800)
+#define SCL_frequency_KHz 800
 #endif
-
 #define INA219_ADDRESS (0x40)
 
 #define INA219_CMD_READ (0x01)
@@ -89,7 +88,9 @@ typedef enum {
 
 class INA219_brzo
 {
-  public:
+public:
+    INA219_brzo(uint8_t _scl = SCL_PIN, uint8_t _sda = SDA_PIN);
+
     bool ICACHE_RAM_ATTR begin(uint8_t address = INA219_ADDRESS, uint16_t speed = SCL_frequency_KHz, uint16_t stretch = SCL_STRETCH_TIMEOUT);
     bool ICACHE_RAM_ATTR configure(ina219_range_t range = INA219_RANGE_32V, ina219_gain_t gain = INA219_GAIN_320MV, ina219_busRes_t busRes = INA219_BUS_RES_12BIT, ina219_shuntRes_t shuntRes = INA219_SHUNT_RES_12BIT_1S, ina219_mode_t mode = INA219_MODE_SHUNT_BUS_CONT);
     bool ICACHE_RAM_ATTR calibrate(float rShuntValue = 0.1, float iMaxExcepted = 2);
@@ -111,8 +112,6 @@ class INA219_brzo
     float ICACHE_RAM_ATTR getMaxPower(void);
 
     void checkConfig(void);
-
-    INA219_brzo(uint8_t _scl = SCL_PIN, uint8_t _sda = SDA_PIN);
 
   private:
     void ICACHE_RAM_ATTR writeRegister16(uint8_t reg, uint16_t val);
