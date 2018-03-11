@@ -18,37 +18,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include "INA219_brzo.h"
-
-#if ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
-#ifdef(ESP8266)
-#include <Wire.h>
-#else
-#include "brzo_i2c.h"
-#endif
+#include <INA219_brzo.h>
 
 INA219_brzo::INA219_brzo(uint8_t scl, uint8_t sda)
 {
-    _scl = scl;
-    _sda = sda;
+    this->_scl = scl;
+    this->_sda = sda;
 }
 bool ICACHE_RAM_ATTR INA219_brzo::begin(uint8_t address, uint16_t speed, uint16_t stretch)
 {
-    _address = address;
-    _speed = speed;
-    _stretch = stretch;
-#ifdef(ESP8266)
-    brzo_i2c_setup(_sda, _scl, _stretch);
-#else
-    Wire.begin(_sda, _scl);
-#endif
-
+    this->_address = address;
+    this->_speed = speed;
+    this->_stretch = stretch;
+    brzo_i2c_setup(this->_sda, this->_scl, this->_stretch);
     return true;
 }
 
@@ -242,42 +224,38 @@ int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
     int16_t value;
     _buffer[0] = reg;
 
-#ifdef(ESP8266)
-    brzo_i2c_start_transaction(_address, _speed);
-    brzo_i2c_write(&_buffer[0], 1, true); // Set Register
+    brzo_i2c_start_transaction(this->_address, this->_speed);
+    brzo_i2c_write(&_buffer[0], 1, false); // Set Register
     brzo_i2c_read(&_buffer[1], 2, false); // Read 2 Bytes from Register
     uint8_t _ecode = brzo_i2c_end_transaction();
-    uint8_t vha = _buffer[1];
-    uint8_t vla = _buffer[2];
-#else
-    Wire.beginTransmission(_address);
-#if ARDUINO >= 100
-    Wire.write(reg);
-#else
-    Wire.send(reg);
-#endif
-    Wire.endTransmission();
 
-    Wire.requestFrom(_address, 2);
-    while (!Wire.available())
-    {
-    };
-#if ARDUINO >= 100
-    uint8_t vha = Wire.read();
-    uint8_t vla = Wire.read();
-#else
-    uint8_t vha = Wire.receive();
-    uint8_t vla = Wire.receive();
-#endif
-#endif
-
-#ifdef(ESP8266)
     if (_ecode != 0) // on error
     {
-        Serial.print("Error Code: ");
-        Serial.println(_ecode);
+        Serial.print("Brzo I2C Read Error on (0x");
+        Serial.print(this->_address,HEX);
+        Serial.print("): ");
+        //1 : Bus not free, i.e. either SDA or SCL is low
+        // 2 : Not ACK ("NACK") by slave during write: Either the slave did not respond to the given slave address; or the slave did not ACK a byte transferred by the master.
+        // 4 : Not ACK ("NACK") by slave during read, i.e. slave did not respond to the given slave address
+        // 8 : Clock Stretching by slave exceeded maximum clock stretching time. Most probably, there is a bus stall now!
+        // 16 : Read was called with 0 bytes to be read by the master. Command not sent to the slave, since this could yield to a bus stall
+        // 32 : ACK Polling timeout exceeded
+        switch (_ecode)
+        {
+          case 0:        Serial.println("All Ok"); break;
+          case 1:        Serial.println("Bus not free"); break;
+          case 2:        Serial.println("Not ACK during WRITE"); break;
+          case 4:        Serial.println("Not ACK during READ"); break;
+          case 8:        Serial.println("Clock Stretch Exceeded"); break;
+          case 16:       Serial.println("Read called with 0 Bytes"); break;
+          case 32:       Serial.println("ACK Polling timeout"); break;
+          default: Serial.println("unknown");
+        }
+        //Serial.println(_ecode);
     }
-#endif
+
+    uint8_t vha = _buffer[1];
+    uint8_t vla = _buffer[2];
 
     value = (vha << 8) | vla;
     return value;
@@ -285,43 +263,44 @@ int16_t ICACHE_RAM_ATTR INA219_brzo::readRegister16(uint8_t reg)
 
 void ICACHE_RAM_ATTR INA219_brzo::writeRegister16(uint8_t reg, uint16_t val)
 {
-#ifdef(ESP8266)
     _buffer[0] = reg;
     _buffer[1] = (val >> 8) & 0xFF; // high BYTE of DWORD
     _buffer[2] = val & 0xFF;        // low BYTE of DWORD
 
-    brzo_i2c_start_transaction(_address, _speed);
-    brzo_i2c_write(&_buffer[0], 3, true); // Set Register
+    brzo_i2c_start_transaction(this->_address, this->_speed);
+    brzo_i2c_write(&_buffer[0], 3, false); // Set Register
     uint8_t _ecode = brzo_i2c_end_transaction();
     if (_ecode != 0) // on error
     {
-        Serial.print("Error Code: ");
-        Serial.println(_ecode);
+        Serial.print("Brzo I2C Write Error on (0x");
+        Serial.print(_address,HEX);
+        Serial.print("): ");
+        switch (_ecode)
+        {
+          case 0:        Serial.println("All Ok"); break;
+          case 1:        Serial.println("Bus not free"); break;
+          case 2:        Serial.println("Not ACK during WRITE"); break;
+          case 4:        Serial.println("Not ACK during READ"); break;
+          case 8:        Serial.println("Clock Stretch Exceeded"); break;
+          case 16:       Serial.println("Read called with 0 Bytes"); break;
+          case 32:       Serial.println("ACK Polling timeout"); break;
+          default: Serial.println("unknown");
+        }
+        //Serial.println(_ecode);
     }
-#else
-    uint8_t vla;
-    vla = (uint8_t)val;
-    val >>= 8;
-
-    Wire.beginTransmission(_address);
-#if ARDUINO >= 100
-    Wire.write(reg);
-    Wire.write((uint8_t)val);
-    Wire.write(vla);
-#else
-    Wire.send(reg);
-    Wire.send((uint8_t)val);
-    Wire.send(vla);
-#endif
-    Wire.endTransmission();
-#endif
 }
 
 
-void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
+void INA219_brzo::checkConfig(void)
 {
+    Serial.println("I2C:                 ");
+    Serial.print("ADR: (0x"); Serial.print(this->_address,HEX); Serial.println(")");
+    Serial.print("Pins: "); Serial.print(this->_scl); Serial.print(" SCL, ");Serial.print(this->_sda); Serial.println(" SDA");
+    Serial.print("SCL: "); Serial.print(this->_speed); Serial.println("k");
+    Serial.print("STRETCH: "); Serial.print(this->_stretch); Serial.println("ms");
+
   Serial.print("Mode:                 ");
-  switch (ina.getMode())
+  switch (this->getMode())
   {
     case INA219_MODE_POWER_DOWN:      Serial.println("Power-Down"); break;
     case INA219_MODE_SHUNT_TRIG:      Serial.println("Shunt Voltage, Triggered"); break;
@@ -335,7 +314,7 @@ void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
   }
 
   Serial.print("Range:                ");
-  switch (ina.getRange())
+  switch (this->getRange())
   {
     case INA219_RANGE_16V:            Serial.println("16V"); break;
     case INA219_RANGE_32V:            Serial.println("32V"); break;
@@ -343,7 +322,7 @@ void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
   }
 
   Serial.print("Gain:                 ");
-  switch (ina.getGain())
+  switch (this->getGain())
   {
     case INA219_GAIN_40MV:            Serial.println("+/- 40mV"); break;
     case INA219_GAIN_80MV:            Serial.println("+/- 80mV"); break;
@@ -353,7 +332,7 @@ void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
   }
 
   Serial.print("Bus resolution:       ");
-  switch (ina.getBusRes())
+  switch (this->getBusRes())
   {
     case INA219_BUS_RES_9BIT:         Serial.println("9-bit"); break;
     case INA219_BUS_RES_10BIT:        Serial.println("10-bit"); break;
@@ -363,7 +342,7 @@ void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
   }
 
   Serial.print("Shunt resolution:     ");
-  switch (ina.getShuntRes())
+  switch (this->getShuntRes())
   {
     case INA219_SHUNT_RES_9BIT_1S:    Serial.println("9-bit / 1 sample"); break;
     case INA219_SHUNT_RES_10BIT_1S:   Serial.println("10-bit / 1 sample"); break;
@@ -380,18 +359,18 @@ void ICACHE_RAM_ATTR INA219_brzo::checkConfig(void)
   }
 
   Serial.print("Max possible current: ");
-  Serial.print(ina.getMaxPossibleCurrent());
+  Serial.print(this->getMaxPossibleCurrent());
   Serial.println(" A");
 
   Serial.print("Max current:          ");
-  Serial.print(ina.getMaxCurrent());
+  Serial.print(this->getMaxCurrent());
   Serial.println(" A");
 
   Serial.print("Max shunt voltage:    ");
-  Serial.print(ina.getMaxShuntVoltage());
+  Serial.print(this->getMaxShuntVoltage());
   Serial.println(" V");
 
   Serial.print("Max power:            ");
-  Serial.print(ina.getMaxPower());
+  Serial.print(this->getMaxPower());
   Serial.println(" W");
 }
